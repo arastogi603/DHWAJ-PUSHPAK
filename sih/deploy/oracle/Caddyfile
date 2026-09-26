@@ -1,0 +1,10 @@
+{$PUBLIC_HOST:127-0-0-1.sslip.io} {
+    @app path /api/* /ws/* /health /ready
+    # Caddy forwards WebSocket Upgrade requests under /ws/* automatically.
+    handle @app {
+        reverse_proxy backend:8080
+    }
+    handle {
+        respond 404
+    }
+}

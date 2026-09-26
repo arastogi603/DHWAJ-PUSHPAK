@@ -1,0 +1,102 @@
+services:
+  backend:
+    build:
+      context: ../..
+      dockerfile: Backend/Dockerfile
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      RFSCHEDULER_ML_SCHEDULER_URL: http://scheduler:8500
+      RFSCHEDULER_ML_PERIODICITY_URL: http://periodicity:8600
+      RFSCHEDULER_ALLOWED_ORIGINS: ${RFSCHEDULER_ALLOWED_ORIGINS:-*}
+    expose:
+      - "8080"
+    mem_limit: 2g
+    depends_on:
+      scheduler:
+        condition: service_healthy
+      periodicity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/health"]
+      interval: 20s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+    networks:
+      - public
+      - internal
+
+  scheduler:
+    build:
+      context: ../..
+      dockerfile: Ai-ml-1-Scheduler-Engine/Dockerfile
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      ML_CHECKPOINT_DIR: /app/ml/checkpoints
+    volumes:
+      - ./checkpoints:/app/ml/checkpoints
+    expose:
+      - "8500"
+    mem_limit: 7g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8500/internal/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    networks:
+      - internal
+
+  periodicity:
+    build:
+      context: ../../Ai-ml-2-Periodicity-Estimator
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    restart: unless-stopped
+    expose:
+      - "8600"
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8600/internal/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2.10-alpine
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:-127-0-0-1.sslip.io}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    mem_limit: 256m
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - public
+
+networks:
+  public:
+  internal:
+    internal: true
+
+volumes:
+  caddy_data:
+  caddy_config:

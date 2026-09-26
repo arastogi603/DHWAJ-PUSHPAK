@@ -18,16 +18,16 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final SimulationWebSocketHandler handler;
+    private final AllowedOrigins allowedOrigins;
 
-    public WebSocketConfig(SimulationWebSocketHandler handler) {
+    public WebSocketConfig(SimulationWebSocketHandler handler, AllowedOrigins allowedOrigins) {
         this.handler = handler;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(handler, "/ws/v1/simulations/*")
-                // MVP demo runs on a trusted local network (PRD Section 16); the Frontend dev
-                // server is a different origin, so it must be allowed explicitly.
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns(allowedOrigins.patterns());
     }
 }
