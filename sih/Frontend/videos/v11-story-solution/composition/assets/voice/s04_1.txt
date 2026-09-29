@@ -1,1 +1,0 @@
-So every ten milliseconds, our receiver looks, learns, and picks its next two bands.

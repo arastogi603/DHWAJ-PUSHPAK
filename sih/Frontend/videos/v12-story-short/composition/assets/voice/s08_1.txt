@@ -1,1 +1,0 @@
-Number four: Q-learning keeps a cheat sheet.

@@ -1,1 +1,0 @@
-They trained on our simulator, and on recordings from the Alan Turing Institute's seventy-gigabyte radar dataset, then faced ones they'd never seen.

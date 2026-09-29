@@ -1,1 +1,0 @@
-The slices that catch signals keep getting bigger.

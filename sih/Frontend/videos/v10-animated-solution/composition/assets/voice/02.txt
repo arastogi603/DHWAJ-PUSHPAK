@@ -1,1 +1,0 @@
-﻿The antenna may receive a wide range, but the tuner can inspect only a narrow slice at once. The problem statement says that slice is typically at least ten times narrower than the range to monitor. Our simulation uses two of sixteen bands.

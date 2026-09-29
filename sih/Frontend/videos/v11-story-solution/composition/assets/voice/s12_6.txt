@@ -1,1 +1,0 @@
-The Bandit catches even more, but it gets greedy. It camps on the busiest bands, and reaches only seventy-one percent of emitters.
